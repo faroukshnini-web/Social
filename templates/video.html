@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ video.title }}{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h1>{{ video.title }}</h1>
+        
+        <div style="margin: 1rem 0;">
+            <video src="/uploads/{{ video.filename }}" controls style="width: 100%;"></video>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+                <strong>بواسطة:</strong> <a href="/profile/{{ video.author.username }}" style="color: #667eea;">{{ video.author.username }}</a>
+            </div>
+            <div>
+                <span style="margin-right: 1rem;">❤️ {{ video.likes|length }} إعجاب</span>
+                <span style="margin-right: 1rem;">👁️ {{ video.views }} مشاهدة</span>
+                <span>{{ video.created_at.strftime('%Y-%m-%d') }}</span>
+            </div>
+        </div>
+        
+        <div style="background: #f9f9f9; padding: 1rem; border-radius: 5px; margin-bottom: 1rem;">
+            <h3>الوصف:</h3>
+            <p>{{ video.description or 'لا يوجد وصف' }}</p>
+        </div>
+        
+        {% if current_user.is_authenticated %}
+            <div style="margin-bottom: 2rem;">
+                <a href="/like/{{ video.id }}" class="btn" style="background: #e74c3c;">
+                    {% if current_user in video.likes|map(attribute='user')|list %}
+                        إلغاء الإعجاب
+                    {% else %}
+                        إعجاب
+                    {% endif %}
+                </a>
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <h3>أضف تعليقاً:</h3>
+                <form method="POST" action="/comment/{{ video.id }}">
+                    <textarea name="content" rows="3" required 
+                              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 0.5rem;"></textarea>
+                    <button type="submit" class="btn">نشر التعليق</button>
+                </form>
+            </div>
+        {% endif %}
+        
+        <div>
+            <h3>التعليقات ({{ video.comments|length }})</h3>
+            {% for comment in video.comments|sort(attribute='created_at', reverse=true) %}
+                <div class="comment">
+                    <div>
+                        <span class="comment-author">{{ comment.user.username }}</span>
+                        <span class="comment-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div style="margin-top: 0.5rem;">{{ comment.content }}</div>
+                </div>
+            {% else %}
+                <p>لا توجد تعليقات بعد. كن أول من يعلق!</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

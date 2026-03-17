@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}رفع فيديو{% endblock %}
+
+{% block content %}
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <h2 style="margin-bottom: 1.5rem; text-align: center;">رفع فيديو جديد</h2>
+        
+        <form method="POST" enctype="multipart/form-data">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">عنوان الفيديو:</label>
+                <input type="text" name="title" required 
+                       style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">وصف الفيديو:</label>
+                <textarea name="description" rows="3" 
+                          style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">اختر الفيديو:</label>
+                <input type="file" name="video" accept="video/*" required 
+                       style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px;">
+                <small style="color: #666;">امتدادات مسموحة: mp4, mov, avi, mkv (حد أقصى 50 ميجا)</small>
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%;">رفع الفيديو</button>
+        </form>
+    </div>
+{% endblock %}

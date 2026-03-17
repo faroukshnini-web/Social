@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}ملف {{ user.username }}{% endblock %}
+
+{% block content %}
+    <div class="profile-header">
+        <div class="profile-pic">
+            {{ user.username[0]|upper }}
+        </div>
+        <h1 style="color: white;">{{ user.username }}</h1>
+        <p style="color: white; margin: 0.5rem 0;">{{ user.bio or 'لا يوجد وصف' }}</p>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">{{ videos|length }}</div>
+                <div class="stat-label">فيديو</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">{{ user.followers|length }}</div>
+                <div class="stat-label">متابعون</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">{{ user.following|length }}</div>
+                <div class="stat-label">يتابع</div>
+            </div>
+        </div>
+        
+        {% if current_user.is_authenticated and current_user.id != user.id %}
+            <a href="/follow/{{ user.username }}" class="btn">
+                {% if current_user in user.followers|map(attribute='follower')|list %}
+                    إلغاء المتابعة
+                {% else %}
+                    متابعة
+                {% endif %}
+            </a>
+        {% endif %}
+    </div>
+    
+    <h2 style="color: white; margin: 2rem 0;">فيديوهات {{ user.username }}</h2>
+    
+    <div class="video-grid">
+        {% for video in videos %}
+            <div class="video-card">
+                <video src="/uploads/{{ video.filename }}" 
+                       onclick="window.location.href='/video/{{ video.id }}'"
+                       style="cursor: pointer;"></video>
+                <div class="video-info">
+                    <div class="video-title">{{ video.title }}</div>
+                    <div class="video-meta">
+                        <span>❤️ {{ video.likes|length }} | 👁️ {{ video.views }}</span>
+                    </div>
+                    <div style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">
+                        {{ video.created_at.strftime('%Y-%m-%d') }}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card" style="grid-column: 1/-1; text-align: center;">
+                لا توجد فيديوهات بعد.
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}الرئيسية - منصتي الاجتماعية{% endblock %}
+
+{% block content %}
+    <h1 style="color: white; margin-bottom: 2rem;">أحدث الفيديوهات</h1>
+    
+    <div class="video-grid">
+        {% for video in videos %}
+            <div class="video-card">
+                <video src="/uploads/{{ video.filename }}" 
+                       onclick="window.location.href='/video/{{ video.id }}'"
+                       style="cursor: pointer;"></video>
+                <div class="video-info">
+                    <div class="video-title">{{ video.title }}</div>
+                    <div class="video-meta">
+                        <span>بواسطة: <a href="/profile/{{ video.author.username }}" style="color: #667eea;">{{ video.author.username }}</a></span>
+                        <span>❤️ {{ video.likes|length }} | 👁️ {{ video.views }}</span>
+                    </div>
+                    <div style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">
+                        {{ video.created_at.strftime('%Y-%m-%d') }}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card" style="grid-column: 1/-1; text-align: center;">
+                لا توجد فيديوهات بعد. كن أول من يرفع فيديو!
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
