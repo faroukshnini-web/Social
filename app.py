@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 from models import db, User, Video, Like, Comment, Follow
-
+public_pages = ['login', 'register', 'index']
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
 import os
@@ -185,6 +185,10 @@ def follow(username):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+@app.route('/explore')
+def explore():
+    videos = Video.query.order_by(Video.views.desc()).all()
+    return render_template('index.html', videos=videos)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
