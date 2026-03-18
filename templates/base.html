@@ -282,6 +282,9 @@
         <div class="nav-container">
             <a href="/" class="logo">منصتي الاجتماعية</a>
             <div class="nav-links">
+<a href="#" onclick="openSearchModal(); return false;" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+    <i class="fas fa-search"></i> بحث
+</a>
                 {% if current_user.is_authenticated %}
                     <a href="/profile/{{ current_user.username }}">ملفي</a>
                     <a href="/logout">تسجيل خروج</a>
@@ -331,6 +334,90 @@
             <i class="fas fa-user"></i>
             <span>ملفي</span>
         </a>
+ <!-- نافذة البحث المنبثقة -->
+<div class="modal" id="searchModal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="color: #667eea;">🔍 بحث متقدم</h3>
+            <i class="fas fa-times" onclick="closeSearchModal()" style="font-size: 24px; cursor: pointer;"></i>
+        </div>
+        <input type="text" id="searchInput" placeholder="ابحث عن مستخدمين أو فيديوهات..." class="form-control" style="margin-bottom: 15px;">
+        <div id="searchResults" style="max-height: 400px; overflow-y: auto;"></div>
     </div>
+</div>
+
+<script>
+    // فتح نافذة البحث
+    function openSearchModal() {
+        document.getElementById('searchModal').classList.add('show');
+        document.getElementById('searchInput').focus();
+    }
+    
+    // إغلاق نافذة البحث
+    function closeSearchModal() {
+        document.getElementById('searchModal').classList.remove('show');
+    }
+    
+    // البحث الفوري
+    document.getElementById('searchInput').addEventListener('input', function() {
+        let query = this.value;
+        if (query.length < 2) {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+        
+        // طلب البحث من الخادم
+        fetch('/api/search?q=' + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                let html = '';
+                
+                if (data.users && data.users.length > 0) {
+                    html += '<h4 style="margin: 10px 0;">المستخدمين</h4>';
+                    data.users.forEach(user => {
+                        html += `
+                            <a href="/profile/${user.username}" style="text-decoration: none; color: #333;" onclick="closeSearchModal()">
+                                <div class="card" style="display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 5px;">
+                                    <div class="avatar" style="width: 40px; height: 40px;">${user.username[0].toUpperCase()}</div>
+                                    <div>
+                                        <strong>${user.username}</strong>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                }
+                
+                if (data.videos && data.videos.length > 0) {
+                    html += '<h4 style="margin: 15px 0 10px;">الفيديوهات</h4>';
+                    data.videos.forEach(video => {
+                        html += `
+                            <a href="/video/${video.id}" style="text-decoration: none; color: #333;" onclick="closeSearchModal()">
+                                <div class="card" style="display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 5px;">
+                                    <div class="avatar" style="width: 40px; height: 40px;">${video.author}</div>
+                                    <div>
+                                        <strong>${video.title}</strong>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                }
+                
+                if (data.users.length === 0 && data.videos.length === 0) {
+                    html = '<p style="text-align: center; color: #999;">لا توجد نتائج</p>';
+                }
+                
+                document.getElementById('searchResults').innerHTML = html;
+            });
+    });
+    
+    // إغلاق النافذة بالضغط على ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeSearchModal();
+        }
+    });
+</script>    </div>
 </body>
 </html>

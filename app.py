@@ -197,5 +197,18 @@ def search():
         videos = Video.query.filter(Video.title.contains(query)).all()
         return render_template('search_results.html', users=users, videos=videos, query=query)
     return redirect(url_for('explore'))
+@app.route('/api/search')
+def api_search():
+    query = request.args.get('q', '')
+    if len(query) < 2:
+        return {'users': [], 'videos': []}
+    
+    users = User.query.filter(User.username.contains(query)).limit(5).all()
+    videos = Video.query.filter(Video.title.contains(query)).limit(5).all()
+    
+    return {
+        'users': [{'username': u.username} for u in users],
+        'videos': [{'id': v.id, 'title': v.title, 'author': v.author.username} for v in videos]
+    }
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
