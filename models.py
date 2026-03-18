@@ -64,7 +64,7 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # العلاقات
+    
     user = db.relationship('User', foreign_keys=[user_id], backref='notifications')
     sender = db.relationship('User', foreign_keys=[sender_id])
     video = db.relationship('Video')
