@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 
-from models import db, User, Video, Like, Comment, Follow, Notification
+from models import db, User, Video, Like, Comment, Follow
 public_pages = ['login', 'register', 'index']
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
@@ -143,16 +143,6 @@ def like(video_id):
     else:
         new_like = Like(user_id=current_user.id, video_id=video_id)
         db.session.add(new_like)
-        
-        # إنشاء إشعار إذا كان الإعجاب من مستخدم مختلف
-        if video.user_id != current_user.id:
-            notification = Notification(
-                user_id=video.user_id,
-                sender_id=current_user.id,
-                type='like',
-                video_id=video_id
-            )
-            db.session.add(notification)
     
     db.session.commit()
     return redirect(url_for('video', video_id=video_id))
@@ -164,19 +154,6 @@ def comment(video_id):
     if content.strip():
         new_comment = Comment(content=content, user_id=current_user.id, video_id=video_id)
         db.session.add(new_comment)
-        
-        # إنشاء إشعار إذا كان التعليق من مستخدم مختلف
-        video = Video.query.get(video_id)
-        if video.user_id != current_user.id:
-            notification = Notification(
-                user_id=video.user_id,
-                sender_id=current_user.id,
-                type='comment',
-                video_id=video_id,
-                comment_id=new_comment.id
-            )
-            db.session.add(notification)
-        
         db.session.commit()
     return redirect(url_for('video', video_id=video_id))
 
@@ -188,31 +165,6 @@ def follow(username):
     if user_to_follow == current_user:
         flash('لا يمكنك متابعة نفسك')
         return redirect(url_for('profile', username=username))
-    
-    existing_follow = Follow.query.filter_by(
-        follower_id=current_user.id, 
-        followed_id=user_to_follow.id
-    ).first()
-    
-    if existing_follow:
-        db.session.delete(existing_follow)
-        flash(f'تم إلغاء متابعة {username}')
-    else:
-        new_follow = Follow(follower_id=current_user.id, followed_id=user_to_follow.id)
-        db.session.add(new_follow)
-        
-        # إنشاء إشعار عند المتابعة
-        notification = Notification(
-            user_id=user_to_follow.id,
-            sender_id=current_user.id,
-            type='follow'
-        )
-        db.session.add(notification)
-        
-        flash(f'أنت الآن تتابع {username}')
-    
-    db.session.commit()
-    return redirect(url_for('profile', username=username))
     
     existing_follow = Follow.query.filter_by(
         follower_id=current_user.id, 
@@ -237,10 +189,13 @@ def uploaded_file(filename):
 def explore():
     videos = Video.query.order_by(Video.views.desc()).all()
     return render_template('index.html', videos=videos)
-@app.route('/notifications')
-@login_required
-def notifications():
-    user_notifications = current_user.notifications.order_by(Notification.created_at.desc()).all()
-    return render_template('notifications.html', notifications=user_notifications)
+@app.route('/search')
+def search():
+    query = request.args.get('q', '')
+    if query:
+        users = User.query.filter(User.username.contains(query)).all()
+        videos = Video.query.filter(Video.title.contains(query)).all()
+        return render_template('search_results.html', users=users, videos=videos, query=query)
+    return redirect(url_for('explore'))
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

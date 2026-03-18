@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}بحث: {{ query }}{% endblock %}
+
+{% block content %}
+    <h1 style="color: #667eea; margin-bottom: 20px;">🔍 نتائج البحث عن "{{ query }}"</h1>
+    
+    <h2 style="margin: 20px 0 10px;">المستخدمين</h2>
+    {% if users %}
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            {% for user in users %}
+                <div class="card" style="display: flex; align-items: center; gap: 15px;">
+                    <div class="avatar">{{ user.username[0]|upper }}</div>
+                    <div style="flex: 1;">
+                        <a href="/profile/{{ user.username }}" style="font-weight: 600; color: #333;">{{ user.username }}</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>لا يوجد مستخدمين</p>
+    {% endif %}
+    
+    <h2 style="margin: 30px 0 10px;">الفيديوهات</h2>
+    {% if videos %}
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for video in videos %}
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <div style="padding: 15px;">
+                        <a href="/profile/{{ video.author.username }}" style="font-weight: 600;">{{ video.author.username }}</a>
+                    </div>
+                    <video src="/uploads/{{ video.filename }}" 
+                           onclick="window.location.href='/video/{{ video.id }}'"
+                           style="width: 100%; cursor: pointer;"></video>
+                    <div style="padding: 15px;">
+                        <div class="video-title">{{ video.title }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>لا يوجد فيديوهات</p>
+    {% endif %}
+{% endblock %}
