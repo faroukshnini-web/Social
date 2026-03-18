@@ -54,3 +54,18 @@ class Follow(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     __table_args__ = (db.UniqueConstraint('follower_id', 'followed_id'),)
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # المستلم
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # المرسل
+    type = db.Column(db.String(50), nullable=False)  # like, comment, follow
+    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=True)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=True)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # العلاقات
+    user = db.relationship('User', foreign_keys=[user_id], backref='notifications')
+    sender = db.relationship('User', foreign_keys=[sender_id])
+    video = db.relationship('Video')
+    comment = db.relationship('Comment')

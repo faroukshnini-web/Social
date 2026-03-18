@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}الإشعارات{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 20px; color: #667eea;">الإشعارات</h1>
+    
+    {% if current_user.is_authenticated %}
+        {% if notifications %}
+            {% for notification in notifications %}
+                <div class="card" style="display: flex; align-items: center; gap: 15px;">
+                    <div class="avatar" style="width: 50px; height: 50px; font-size: 20px;">
+                        {{ notification.sender.username[0]|upper }}
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">{{ notification.sender.username }}</div>
+                        <div style="color: #666; margin: 5px 0;">
+                            {% if notification.type == 'like' %}
+                                أعجب بفيديو الخاص بك
+                            {% elif notification.type == 'comment' %}
+                                علق على فيديو الخاص بك
+                            {% elif notification.type == 'follow' %}
+                                بدأ متابعتك
+                            {% endif %}
+                        </div>
+                        <div style="color: #999; font-size: 12px;">
+                            {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    </div>
+                    {% if not notification.is_read %}
+                        <span style="background: #667eea; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px;">جديد</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card" style="text-align: center; padding: 50px;">
+                <i class="fas fa-bell" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
+                <h3 style="color: #666;">لا توجد إشعارات جديدة</h3>
+                <p style="color: #999;">عندما يتفاعل أحدهم مع محتواك، ستظهر الإشعارات هنا</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card" style="text-align: center; padding: 50px;">
+            <i class="fas fa-lock" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
+            <h3 style="color: #666;">يجب تسجيل الدخول أولاً</h3>
+            <a href="/login" class="btn" style="margin-top: 20px;">تسجيل دخول</a>
+        </div>
+    {% endif %}
+{% endblock %}
