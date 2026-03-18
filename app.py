@@ -187,8 +187,8 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 @app.route('/explore')
 def explore():
-    videos = Video.query.order_by(Video.views.desc()).all()
-    return render_template('index.html', videos=videos)
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    return render_template('explore.html', posts=posts)
 @app.route('/search')
 def search():
     query = request.args.get('q', '')
@@ -210,5 +210,58 @@ def api_search():
         'users': [{'username': u.username} for u in users],
         'videos': [{'id': v.id, 'title': v.title, 'author': v.author.username} for v in videos]
     }
+@app.route('/create_post', methods=['GET', 'POST'])
+@login_required
+def create_post():
+    if request.method == 'POST':
+        content = request.form.get('content', '')
+        post_type = request.form.get('type', 'text')
+        media_file = request.files.get('media')
+        
+        media_filename = None
+        if media_file and media_file.filename:
+            filename = secure_filename(media_file.filename)
+            filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+            media_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            media_filename = filename
+        
+        new_post = Post(
+            content=content,
+            type=post_type,
+            media_filename=media_filename,
+            user_id=current_user.id
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        
+        flash('تم إنشاء المنشور بنجاح!')
+        return redirect(url_for('explore'))
+    
+    return render_template('create_post.html')
+
+@app.route('/like_post/<int:post_id>')
+@login_required
+def like_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    existing_like = PostLike.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+    
+    if existing_like:
+        db.session.delete(existing_like)
+    else:
+        new_like = PostLike(user_id=current_user.id, post_id=post_id)
+        db.session.add(new_like)
+    
+    db.session.commit()
+    return redirect(url_for('explore'))
+
+@app.route('/comment_post/<int:post_id>', methods=['POST'])
+@login_required
+def comment_post(post_id):
+    content = request.form.get('content', '')
+    if content.strip():
+        new_comment = PostComment(content=content, user_id=current_user.id, post_id=post_id)
+        db.session.add(new_comment)
+        db.session.commit()
+    return redirect(url_for('explore'))
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
